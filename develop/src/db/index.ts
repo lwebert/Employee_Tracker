@@ -1,10 +1,12 @@
 import { pool } from './connection.js';
 
+//purpose: interact with the Db
+
 //Class for running db queries
 export default class Db {
 	constructor() {}
 
-	//TODO: define methods below
+	//Method to run sql queries
 	async query(sql: string, args: any[] = []) {
 		//create client pool
 		const client = await pool.connect();
@@ -19,16 +21,33 @@ export default class Db {
 		}
 	}
 
+	//TODO: define methods below:
+	findAllDepartments() {
+		return this.query(
+			'SELECT department.id, department.name FROM department;'
+		);
+	}
+
+	findAllRoles() {
+		return this.query(
+			'SELECT role.id, role.title, department.name AS department, role.salary FROM role LEFT JOIN department ON role.department = department.id;'
+		);
+	}
+
 	findAllEmployees() {
 		//do a query, then call this method in your viewEmployees function in types/index.ts file
 		// const sql = 'SELECT * FROM employee';
 
 		// TODO: Add more information from other tables (see acceptance criteria)!! You will have to do joining within the query to get all of this info.
+		//TODO:
 		const sql =
-			'SELECT first_name, last_name, role_id, manager_id FROM employee;';
+			"SELECT employee.id, employee.first_name, employee.last_name, role.title, role.department, role.salary, concat(manager.first_name,' ', manager.last_name) AS manager FROM employee JOIN role ON role.id = employee.role_id JOIN employee manager ON manager.id = employee.manager_id ORDER BY employee.id;"; //self join - cannot say employee 2x, coming up with an alias for it "manager"
+		//concat - to add the space, had to be single quotes ' '
 
 		return this.query(sql);
 		//this keyword refers to the class and all its properties & methods, the query takes the sql string and any args you might have
+		//this keyword in JS is context based (changes based on where you use it). this inside an object or class, it is referring to the object or class itself. query is a method (aka function) on the Db class.
+		//OOP - uses classes adn objects, organizes things together, coding style
 	}
 
 	addNewEmployee(employee: any) {
@@ -41,12 +60,49 @@ export default class Db {
 		);
 	}
 
-	findAllRoles() {
-		// const sql = '...everything below...';
+	addNewDepartment(department: any) {
+		const { name } = department;
+		return this.query('INSERT INTO department (name) VALUES ($1)', [name]);
+	}
+
+	addNewRole(role: any) {
+		const { title, salary, department } = role;
+
 		return this.query(
-			'SELECT role.id, role.title, department.name AS department, role.salary FROM role LEFT JOIN department on role.department_id = department.id'
+			'INSERT INTO role (title, salary, department) VALUES ($1, $2, $3)',
+			[title, salary, department]
 		);
 	}
 
-	findAllManagers() {}
+	updateEmployeeRole(id: any, role_id: any) {
+		return this.query(
+			'UPDATE employee SET role_id = ($1) WHERE id = ($2)',
+			[role_id, id]
+		);
+	}
+
+	updateEmployeeManager(id: any, manager_id: any) {
+		return this.query(
+			'UPDATE employee SET manager_id = ($1) WHERE id = ($2)',
+			[manager_id, id]
+		);
+	}
+
+	removeEmployee(employeeId: any) {
+		return this.query('DELETE FROM employee WHERE id = ($1)', [employeeId]);
+	}
+
+	removeRole(role_id: any) {
+		return this.query('DELETE FROM role WHERE id = ($1)', [role_id]);
+	}
+
+	removeDepartment(department_id: any) {
+		return this.query('DELETE FROM department WHERE id = ($1)', [
+			department_id,
+		]);
+	}
+
+	quit() {
+		return this.query('/q');
+	}
 }

@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 dotenv.config();
+//purpose: make initial connection to db, set it up so that it can be used
 
 import pg from 'pg';
 const { Pool } = pg;
@@ -9,7 +10,8 @@ const pool = new Pool({
   password: process.env.DB_PASSWORD,
   host: 'localhost',
   database: process.env.DB_NAME,
-  port: 5431,
+//   port: 5431,
+  port: 5432,
 });
 
 const connectToDb = async () => {
