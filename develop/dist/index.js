@@ -2,6 +2,9 @@ import inquirer from 'inquirer';
 import Db from './db/index.js';
 const db = new Db();
 initialPrompts();
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
 //purpose: menu
 function initialPrompts() {
     //if you used arrow function, you coudln't call it until after it was declared
@@ -49,8 +52,8 @@ function initialPrompts() {
                     value: 'REMOVE_DEPARTMENT',
                 },
                 {
-                    name: 'Remove Roll',
-                    value: 'REMOVE_ROLL',
+                    name: 'Remove Role',
+                    value: 'REMOVE_ROLE',
                 },
                 {
                     name: 'Remove Employee',
@@ -144,7 +147,6 @@ async function viewEmployees() {
     console.table(dbResEmployees.rows);
     initialPrompts();
 }
-// TODO:
 async function addDepartment() {
     try {
         const inqResDepName = await inquirer.prompt([
@@ -154,7 +156,6 @@ async function addDepartment() {
                 type: 'input',
             },
         ]);
-        // const depName = inqResDepName.department_name;
         const newDepartment = {
             name: inqResDepName.department_name,
         };
@@ -408,8 +409,8 @@ async function updateEmployeeRole() {
     ]);
     await db.updateEmployeeRole(inqResUpdateRole.employee, inqResUpdateRole.role);
     console.log(`The employee's role has been updated.`);
-    viewEmployees(); //it already returns the menu for you
-    // initialPrompts();
+    // viewEmployees(); //it already returns the menu for you
+    initialPrompts();
 }
 async function updateEmployeeManager() {
     const dbResEmployees = await db.findAllEmployees();
@@ -444,7 +445,8 @@ async function updateEmployeeManager() {
     ]);
     db.updateEmployeeManager(inqResUpdateManager.employee, inqResUpdateManager.manager);
     console.log("The employee's manager has been updated.");
-    viewEmployees();
+    // viewEmployees();
+    initialPrompts();
 }
 //TODO:
 async function removeEmployee() {
@@ -463,24 +465,35 @@ async function removeEmployee() {
     ]);
     db.removeEmployee(inqResEmployee.deleteEmployee);
     console.log(`The employee has been deleted.`);
-    viewEmployees();
+    // viewEmployees();
+    initialPrompts();
 }
 async function removeRole() {
-    const dbResRoles = await db.findAllRoles();
-    const roleChoices = dbResRoles.rows.map((role) => {
-        return { name: role.title, value: role.id };
-    });
-    const inqResRole = await inquirer.prompt([
-        {
-            name: 'role',
-            message: 'Which role would you like to delete?',
-            type: 'list',
-            choices: roleChoices,
-        },
-    ]);
-    await db.removeRole(inqResRole.role);
-    console.log('The role was deleted.');
-    viewRoles();
+    console.log('Starting removeRole function');
+    try {
+        const dbResRoles = await db.findAllRoles();
+        console.log('Fetched roles:', dbResRoles);
+        const roleChoices = dbResRoles.rows.map((role) => {
+            return { name: role.title, value: role.id };
+        });
+        console.log('Role choices:', roleChoices);
+        const inqResRole = await inquirer.prompt([
+            {
+                name: 'role',
+                message: 'Which role would you like to delete?',
+                type: 'list',
+                choices: roleChoices,
+            },
+        ]);
+        console.log('Selected role to delete:', inqResRole.role);
+        db.deleteRole(inqResRole.role);
+        console.log('The role was deleted.');
+        // viewRoles();
+        initialPrompts();
+    }
+    catch (err) {
+        console.error('Error removing role:', err);
+    }
 }
 async function removeDepartment() {
     const dbResDepartment = await db.findAllDepartments();
@@ -497,6 +510,7 @@ async function removeDepartment() {
     ]);
     db.removeDepartment(inqResDepartment.department);
     console.log('The department was deleted.');
-    viewDepartments();
+    // viewDepartments();
+    initialPrompts();
 }
 async function quit() { }

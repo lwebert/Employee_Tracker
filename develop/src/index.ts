@@ -6,6 +6,9 @@ const db = new Db();
 
 initialPrompts();
 
+process.on('unhandledRejection', (reason, promise) => {
+	console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
 //purpose: menu
 
 function initialPrompts() {
@@ -54,8 +57,8 @@ function initialPrompts() {
 						value: 'REMOVE_DEPARTMENT',
 					},
 					{
-						name: 'Remove Roll',
-						value: 'REMOVE_ROLL',
+						name: 'Remove Role',
+						value: 'REMOVE_ROLE',
 					},
 					{
 						name: 'Remove Employee',
@@ -170,7 +173,6 @@ async function viewEmployees() {
 	initialPrompts();
 }
 
-// TODO:
 async function addDepartment() {
 	try {
 		const inqResDepName = await inquirer.prompt([
@@ -180,8 +182,6 @@ async function addDepartment() {
 				type: 'input',
 			},
 		]);
-
-		// const depName = inqResDepName.department_name;
 
 		const newDepartment = {
 			name: inqResDepName.department_name,
@@ -482,8 +482,8 @@ async function updateEmployeeRole() {
 	);
 
 	console.log(`The employee's role has been updated.`);
-	viewEmployees(); //it already returns the menu for you
-	// initialPrompts();
+	// viewEmployees(); //it already returns the menu for you
+	initialPrompts();
 }
 
 async function updateEmployeeManager() {
@@ -533,7 +533,8 @@ async function updateEmployeeManager() {
 	);
 
 	console.log("The employee's manager has been updated.");
-	viewEmployees();
+	// viewEmployees();
+	initialPrompts();
 }
 
 //TODO:
@@ -556,7 +557,8 @@ async function removeEmployee() {
 
 	db.removeEmployee(inqResEmployee.deleteEmployee);
 	console.log(`The employee has been deleted.`);
-	viewEmployees();
+	// viewEmployees();
+	initialPrompts();
 }
 
 async function removeRole() {
@@ -575,9 +577,11 @@ async function removeRole() {
 		},
 	]);
 
-	await db.removeRole(inqResRole.role);
+	db.deleteRole(inqResRole.role);
 	console.log('The role was deleted.');
-	viewRoles();
+
+	// viewRoles();
+	initialPrompts();
 }
 
 async function removeDepartment() {
@@ -598,7 +602,8 @@ async function removeDepartment() {
 
 	db.removeDepartment(inqResDepartment.department);
 	console.log('The department was deleted.');
-	viewDepartments();
+	// viewDepartments();
+	initialPrompts();
 }
 
 async function quit() {}

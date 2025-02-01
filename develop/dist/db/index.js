@@ -22,14 +22,14 @@ export default class Db {
         return this.query('SELECT department.id, department.name FROM department;');
     }
     findAllRoles() {
-        return this.query('SELECT role.id, role.title, department.name AS department, role.salary FROM role LEFT JOIN department ON role.department = department.id;');
+        return this.query('SELECT role.id, role.title, d.name AS department, role.salary FROM role LEFT JOIN department d ON role.department = d.id;');
     }
     findAllEmployees() {
         //do a query, then call this method in your viewEmployees function in types/index.ts file
         // const sql = 'SELECT * FROM employee';
         // TODO: Add more information from other tables (see acceptance criteria)!! You will have to do joining within the query to get all of this info.
         //TODO:
-        const sql = "SELECT employee.id, employee.first_name, employee.last_name, role.title, role.department, role.salary, concat(manager.first_name,' ', manager.last_name) AS manager FROM employee JOIN role ON role.id = employee.role_id JOIN employee manager ON manager.manager_id = employee.manager_id ORDER BY employee.id;"; //self join - cannot say employee 2x, coming up with an alias for it "manager"
+        const sql = "SELECT employee.id, employee.first_name, employee.last_name, role.title, d.name AS department, role.salary, CONCAT(manager.first_name,' ', manager.last_name) AS manager FROM employee LEFT JOIN role ON role.id = employee.role_id LEFT JOIN employee manager ON manager.id = employee.manager_id LEFT JOIN department d ON role.department = d.id ORDER BY employee.id;"; //self join - cannot say employee 2x, coming up with an alias for it "manager"
         //concat - to add the space, had to be single quotes ' '
         return this.query(sql);
         //this keyword refers to the class and all its properties & methods, the query takes the sql string and any args you might have
@@ -38,8 +38,6 @@ export default class Db {
     }
     addNewEmployee(employee) {
         const { first_name, last_name, role_id, manager_id } = employee;
-        // const sql =
-        // 	'"INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ($1, $2, $3, $4)", [fist_name, last_name, role_id, manager_id]'; //insert with parameterized queries -- this wouldn't work since says variables above were undefined!
         return this.query('INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ($1, $2, $3, $4)', [first_name, last_name, role_id, manager_id]);
     }
     addNewDepartment(department) {
@@ -59,7 +57,8 @@ export default class Db {
     removeEmployee(employeeId) {
         return this.query('DELETE FROM employee WHERE id = ($1)', [employeeId]);
     }
-    removeRole(role_id) {
+    deleteRole(role_id) {
+        console.log('Attempting to delete role with ID:', role_id);
         return this.query('DELETE FROM role WHERE id = ($1)', [role_id]);
     }
     removeDepartment(department_id) {
