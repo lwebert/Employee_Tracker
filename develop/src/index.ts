@@ -476,15 +476,10 @@ async function updateEmployeeRole() {
 		},
 	]);
 
-	try {
-		const result = await db.updateEmployeeRole(
+	await db.updateEmployeeRole(
 			inqResUpdateRole.employee,
 			inqResUpdateRole.role
 		);
-		console.log('Rows affected:', result.rowCount);
-	} catch (err) {
-		console.error('Error updating employee role:', err);
-	}
 
 	console.log(`The employee's role has been updated.`);
 	// viewEmployees(); //it already returns the menu for you
