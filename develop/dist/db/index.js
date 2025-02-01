@@ -49,10 +49,11 @@ export default class Db {
         return this.query('INSERT INTO role (title, salary, department) VALUES ($1, $2, $3)', [title, salary, department]);
     }
     updateEmployeeRole(id, role_id) {
-        return this.query('UPDATE employee SET role_id = ($1) WHERE id = ($2)', [role_id, id]);
+        return this.query('UPDATE employee SET role_id = ($1) WHERE id = ($2);', [role_id, id]);
     }
     updateEmployeeManager(id, manager_id) {
-        return this.query('UPDATE employee SET manager_id = ($1) WHERE id = ($2)', [manager_id, id]);
+        console.log(`Manager id, id`, manager_id, id);
+        return this.query('UPDATE employee SET manager_id=($1) WHERE id =($2);', [manager_id, id]);
     }
     removeEmployee(employeeId) {
         return this.query('DELETE FROM employee WHERE id = ($1)', [employeeId]);

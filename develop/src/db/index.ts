@@ -74,14 +74,15 @@ export default class Db {
 
 	updateEmployeeRole(id: any, role_id: any) {
 		return this.query(
-			'UPDATE employee SET role_id = ($1) WHERE id = ($2)',
+			'UPDATE employee SET role_id = ($1) WHERE id = ($2);',
 			[role_id, id]
 		);
 	}
 
 	updateEmployeeManager(id: any, manager_id: any) {
+		// console.log(`Manager id, id`, manager_id, id);
 		return this.query(
-			'UPDATE employee SET manager_id = ($1) WHERE id = ($2)',
+			'UPDATE employee SET manager_id=($1) WHERE id =($2);',
 			[manager_id, id]
 		);
 	}
@@ -91,7 +92,7 @@ export default class Db {
 	}
 
 	deleteRole(role_id: any) {
-		console.log('Attempting to delete role with ID:', role_id);
+		// console.log('Attempting to delete role with ID:', role_id);
 		return this.query('DELETE FROM role WHERE id = ($1)', [role_id]);
 	}
 

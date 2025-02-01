@@ -407,7 +407,13 @@ async function updateEmployeeRole() {
             choices: roleChoices,
         },
     ]);
-    await db.updateEmployeeRole(inqResUpdateRole.employee, inqResUpdateRole.role);
+    try {
+        const result = await db.updateEmployeeRole(inqResUpdateRole.employee, inqResUpdateRole.role);
+        console.log('Rows affected:', result.rowCount);
+    }
+    catch (err) {
+        console.error('Error updating employee role:', err);
+    }
     console.log(`The employee's role has been updated.`);
     // viewEmployees(); //it already returns the menu for you
     initialPrompts();
@@ -419,16 +425,18 @@ async function updateEmployeeManager() {
         return { name: employeeName, value: employee.id };
     });
     const managerChoices = dbResEmployees.rows.map((employee) => {
-        const id = employee.manager_id;
         const firstName = employee.first_name;
         const lastName = employee.last_name;
+        const employeeName = firstName + ' ' + lastName;
         return {
-            name: `${firstName} ${lastName}`,
-            value: id,
+            name: employeeName,
+            value: employee.id,
         };
     });
-    const managerChoicesFiltered = managerChoices.filter((manager) => manager.value == null);
-    managerChoicesFiltered.unshift({ name: 'None', value: null });
+    // const managerChoicesFiltered = managerChoices.filter(
+    // 	(manager) => manager.value == null
+    // );
+    managerChoices.unshift({ name: 'None', value: null });
     const inqResUpdateManager = await inquirer.prompt([
         {
             name: 'employee',
@@ -440,7 +448,8 @@ async function updateEmployeeManager() {
             name: 'manager',
             message: 'Which manager do you want to assign to the selected employee?',
             type: 'list',
-            choices: managerChoicesFiltered,
+            choices: managerChoices,
+            // choices: managerChoicesFiltered,
         },
     ]);
     db.updateEmployeeManager(inqResUpdateManager.employee, inqResUpdateManager.manager);
@@ -469,31 +478,22 @@ async function removeEmployee() {
     initialPrompts();
 }
 async function removeRole() {
-    console.log('Starting removeRole function');
-    try {
-        const dbResRoles = await db.findAllRoles();
-        console.log('Fetched roles:', dbResRoles);
-        const roleChoices = dbResRoles.rows.map((role) => {
-            return { name: role.title, value: role.id };
-        });
-        console.log('Role choices:', roleChoices);
-        const inqResRole = await inquirer.prompt([
-            {
-                name: 'role',
-                message: 'Which role would you like to delete?',
-                type: 'list',
-                choices: roleChoices,
-            },
-        ]);
-        console.log('Selected role to delete:', inqResRole.role);
-        db.deleteRole(inqResRole.role);
-        console.log('The role was deleted.');
-        // viewRoles();
-        initialPrompts();
-    }
-    catch (err) {
-        console.error('Error removing role:', err);
-    }
+    const dbResRoles = await db.findAllRoles();
+    const roleChoices = dbResRoles.rows.map((role) => {
+        return { name: role.title, value: role.id };
+    });
+    const inqResRole = await inquirer.prompt([
+        {
+            name: 'role',
+            message: 'Which role would you like to delete?',
+            type: 'list',
+            choices: roleChoices,
+        },
+    ]);
+    db.deleteRole(inqResRole.role);
+    console.log('The role was deleted.');
+    // viewRoles();
+    initialPrompts();
 }
 async function removeDepartment() {
     const dbResDepartment = await db.findAllDepartments();

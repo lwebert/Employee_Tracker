@@ -476,10 +476,15 @@ async function updateEmployeeRole() {
 		},
 	]);
 
-	await db.updateEmployeeRole(
-		inqResUpdateRole.employee,
-		inqResUpdateRole.role
-	);
+	try {
+		const result = await db.updateEmployeeRole(
+			inqResUpdateRole.employee,
+			inqResUpdateRole.role
+		);
+		console.log('Rows affected:', result.rowCount);
+	} catch (err) {
+		console.error('Error updating employee role:', err);
+	}
 
 	console.log(`The employee's role has been updated.`);
 	// viewEmployees(); //it already returns the menu for you
@@ -495,21 +500,21 @@ async function updateEmployeeManager() {
 	});
 
 	const managerChoices = dbResEmployees.rows.map((employee) => {
-		const id = employee.manager_id;
 		const firstName = employee.first_name;
 		const lastName = employee.last_name;
+		const employeeName = firstName + ' ' + lastName;
 
 		return {
-			name: `${firstName} ${lastName}`,
-			value: id,
+			name: employeeName,
+			value: employee.id,
 		};
 	});
 
-	const managerChoicesFiltered = managerChoices.filter(
-		(manager) => manager.value == null
-	);
+	// const managerChoicesFiltered = managerChoices.filter(
+	// 	(manager) => manager.value == null
+	// );
 
-	managerChoicesFiltered.unshift({ name: 'None', value: null });
+	managerChoices.unshift({ name: 'None', value: null });
 
 	const inqResUpdateManager = await inquirer.prompt([
 		{
@@ -523,7 +528,8 @@ async function updateEmployeeManager() {
 			message:
 				'Which manager do you want to assign to the selected employee?',
 			type: 'list',
-			choices: managerChoicesFiltered,
+			choices: managerChoices,
+			// choices: managerChoicesFiltered,
 		},
 	]);
 
